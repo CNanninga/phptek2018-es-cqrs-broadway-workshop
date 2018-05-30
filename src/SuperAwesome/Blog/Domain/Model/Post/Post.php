@@ -11,6 +11,10 @@ use SuperAwesome\Blog\Domain\Model\Post\Event\PostWasUncategorized;
 use SuperAwesome\Blog\Domain\Model\Post\Event\PostWasUntagged;
 use SuperAwesome\Common\Domain\Model\EventSourcing;
 
+/**
+ * TO MAKE TESTS PASS, COMMENT OUT extends, UN-COMMENT EventSourcing,
+ * AND REPLACE "apply(" WITH "recordEvent("
+ */
 class Post
     extends EventSourcedAggregateRoot
 {
