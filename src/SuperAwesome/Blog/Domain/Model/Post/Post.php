@@ -2,6 +2,7 @@
 
 namespace SuperAwesome\Blog\Domain\Model\Post;
 
+use Broadway\EventSourcing\EventSourcedAggregateRoot;
 use SuperAwesome\Blog\Domain\Model\Post\Event\PostWasCategorized;
 use SuperAwesome\Blog\Domain\Model\Post\Event\PostWasCreated;
 use SuperAwesome\Blog\Domain\Model\Post\Event\PostWasPublished;
@@ -11,8 +12,9 @@ use SuperAwesome\Blog\Domain\Model\Post\Event\PostWasUntagged;
 use SuperAwesome\Common\Domain\Model\EventSourcing;
 
 class Post
+    extends EventSourcedAggregateRoot
 {
-    use EventSourcing;
+//    use EventSourcing;
 
     /** @var string */
     private $id;
@@ -95,7 +97,7 @@ class Post
         $this->uncategorizeIfCategoryChanged($category);
         $this->categorizeIfCategoryChanged($category);
 
-        $this->recordEvent(new PostWasPublished(
+        $this->apply(new PostWasPublished(
            $this->id,
            $title,
            $content,
@@ -109,7 +111,7 @@ class Post
             return;
         }
 
-        $this->recordEvent(new PostWasUncategorized($this->id, $this->category));
+        $this->apply(new PostWasUncategorized($this->id, $this->category));
     }
 
     protected function categorizeIfCategoryChanged($category)
@@ -118,7 +120,7 @@ class Post
             return;
         }
 
-        $this->recordEvent(new PostWasCategorized($this->id, $category));
+        $this->apply(new PostWasCategorized($this->id, $category));
     }
 
     /**
@@ -132,7 +134,7 @@ class Post
             return;
         }
 
-        $this->recordEvent(new PostWasTagged($this->id, $tag));
+        $this->apply(new PostWasTagged($this->id, $tag));
     }
 
     /**
@@ -146,13 +148,13 @@ class Post
             return;
         }
 
-        $this->recordEvent(new PostWasUntagged($this->id, $tag));
+        $this->apply(new PostWasUntagged($this->id, $tag));
     }
 
     static public function create($id)
     {
         $instance = new static();
-        $instance->recordEvent(new PostWasCreated($id));
+        $instance->apply(new PostWasCreated($id));
 
         return $instance;
     }
@@ -193,5 +195,10 @@ class Post
         if (isset($this->tags[$event->tag])) {
             unset($this->tags[$event->tag]);
         }
+    }
+
+    public function getAggregateRootId(): string
+    {
+        return $this->id;
     }
 }
